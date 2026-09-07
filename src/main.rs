@@ -1,4 +1,6 @@
 use std::io::{self, BufRead};
+mod bump;
+
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 // TODO (why-allocator): implement per the lesson description.
 
@@ -7,6 +9,14 @@ enum AllocatorCommands {
     ALLOC(usize),
     RESET,
     USED,
+}
+
+fn get_size_part(line: Vec<&str>) -> usize {
+    return if let Some(size) = line.get(1) {
+        size.parse::<usize>().unwrap_or(0)
+    } else {
+        0 as usize
+    };
 }
 
 fn parse_command(line: &str) -> Result<AllocatorCommands, GenericError> {
@@ -18,22 +28,15 @@ fn parse_command(line: &str) -> Result<AllocatorCommands, GenericError> {
     };
     return match command_part {
         "INIT" => {
-            let size_part: usize = if let Some(size) = line_parts.get(1) {
-                size.parse::<usize>()?
-            } else {
-                0
-            };
+            let size_part: usize = get_size_part(line_parts);
             Ok(AllocatorCommands::INIT(size_part))
         }
         "ALLOC" => {
-            todo!()
+            let size_part: usize = get_size_part(line_parts);
+            Ok(AllocatorCommands::ALLOC(size_part))
         }
-        "RESET" => {
-            todo!()
-        }
-        "USED" => {
-            todo!()
-        }
+        "RESET" => Ok(AllocatorCommands::RESET),
+        "USED" => Ok(AllocatorCommands::USED),
         _ => Err("Unknown command".into()),
     };
 }
