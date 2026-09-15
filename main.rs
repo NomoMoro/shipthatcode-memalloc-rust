@@ -66,7 +66,7 @@ fn main() {
                     .map(|addr| addr.to_string())
                     .unwrap_or_else(|err| err.to_string());
 
-                println!("{output}");
+                println!("{}", output);
             }
             AllocatorCommands::RESET => {
                 bump_alloc.reset();
