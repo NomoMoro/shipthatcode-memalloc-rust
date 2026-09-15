@@ -1,5 +1,6 @@
 use std::io::{self, BufRead};
 mod bump;
+use bump::BumpAllocator;
 
 type GenericError = Box<dyn std::error::Error + Send + Sync>;
 // TODO (why-allocator): implement per the lesson description.
@@ -42,12 +43,38 @@ fn parse_command(line: &str) -> Result<AllocatorCommands, GenericError> {
 }
 
 fn main() {
+    let mut bump_alloc: BumpAllocator = BumpAllocator::new();
     let stdin = io::stdin();
     for line in stdin.lock().lines() {
         let l = line.unwrap();
         if l.is_empty() {
             continue;
         }
-        println!("TODO");
+        let parse_result: AllocatorCommands = if let Ok(command) = parse_command(l.as_str()) {
+            command
+        } else {
+            continue;
+        };
+        match parse_result {
+            AllocatorCommands::INIT(size) => {
+                bump_alloc = BumpAllocator::init(size);
+                println!("OK")
+            }
+            AllocatorCommands::ALLOC(size) => {
+                let output = bump_alloc
+                    .alloc(size)
+                    .map(|addr| addr.to_string())
+                    .unwrap_or_else(|err| err.to_string());
+
+                println!("{output}");
+            }
+            AllocatorCommands::RESET => {
+                bump_alloc.reset();
+                println!("OK");
+            }
+            AllocatorCommands::USED => {
+                println!("{}", bump_alloc.used());
+            }
+        }
     }
 }

@@ -1,16 +1,28 @@
-use thiserror::Error;
-
-#[derive(Error, Debug)]
-#[error("OOM")]
+#[derive(Debug)]
 pub struct OutOfMemoryError;
 
-struct BumpAllocator {
+impl std::fmt::Display for OutOfMemoryError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "OOM")
+    }
+}
+
+impl std::error::Error for OutOfMemoryError {}
+
+pub struct BumpAllocator {
     bump: usize,
     heap_size: usize,
 }
 
 impl BumpAllocator {
-    pub fn new(capacity: usize) -> Self {
+    pub fn new() -> Self {
+        BumpAllocator {
+            bump: 0,
+            heap_size: 0,
+        }
+    }
+
+    pub fn init(capacity: usize) -> Self {
         BumpAllocator {
             bump: 0,
             heap_size: capacity,
@@ -30,7 +42,7 @@ impl BumpAllocator {
         self.bump = 0;
     }
 
-    pub fn used(self) -> usize {
+    pub fn used(&self) -> usize {
         self.bump
     }
 }
